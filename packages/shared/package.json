@@ -1,0 +1,21 @@
+{
+  "name": "@tenthousand/shared",
+  "version": "1.0.0",
+  "type": "module",  
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+    "scripts": {
+    "dev": "concurrently \"pnpm --filter server dev\" \"pnpm --filter client dev\"",
+    "build": "pnpm --filter server build && pnpm --filter client build"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^6.1.2"
+  }
+}

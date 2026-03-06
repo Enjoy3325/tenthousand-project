@@ -1,0 +1,13 @@
+{
+  "name": "tenthousand-project",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.30.3",
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter server dev\" \"pnpm --filter client dev\"",
+    "build": "pnpm --filter server build && pnpm --filter client build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

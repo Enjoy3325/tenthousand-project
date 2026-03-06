@@ -1,0 +1,53 @@
+query GetForms {
+  forms {
+    id
+    title
+    description
+    createdAt
+  }
+}
+
+query GetForm($id: ID!) {
+  form(id: $id) {
+    id
+    title
+    description
+    questions {
+      id
+      text
+      type
+      required
+      order
+      options {
+        id
+        label
+      }
+    }
+  }
+}
+
+query GetResponses($formId: ID!) {
+  responses(formId: $formId) {
+    id
+    submittedAt
+    answers {
+      id
+      questionId
+      value
+    }
+  }
+}
+
+mutation CreateForm($title: String!, $description: String, $questions: [QuestionInput!]) {
+  createForm(title: $title, description: $description, questions: $questions) {
+    id
+    title
+  }
+}
+
+mutation SubmitResponse($formId: ID!, $answers: [AnswerInput!]!) {
+  submitResponse(formId: $formId, answers: $answers) {
+    id
+    submittedAt
+  }
+}
