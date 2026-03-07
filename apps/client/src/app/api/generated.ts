@@ -103,10 +103,10 @@ export type QuestionInput = {
 };
 
 export enum QuestionType {
-  CHECKBOX = 'CHECKBOX',
-  DATE = 'DATE',
-  MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
-  TEXT = 'TEXT'
+  Checkbox = 'CHECKBOX',
+  Date = 'DATE',
+  MultipleChoice = 'MULTIPLE_CHOICE',
+  Text = 'TEXT'
 }
 
 export type Response = {
