@@ -33,9 +33,14 @@ export function HomePage() {
 				<div>
 					<h1>My Forms</h1>
 					{forms.length > 0 && (
-						<Button variant='primary' onClick={() => navigate('/forms/new')}>
-							Create new form
-						</Button>
+						<>
+							<p className='home-header__count'>
+								{forms.length} form{forms.length !== 1 ? 's' : ''}
+							</p>
+							<Button variant='primary' onClick={() => navigate('/forms/new')}>
+								Create new form
+							</Button>
+						</>
 					)}
 				</div>
 
