@@ -1,10 +1,10 @@
 export { typeDefs } from './schema.js'
 
 export enum QuestionType {
-  TEXT = 'TEXT',
-  MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
-  CHECKBOX = 'CHECKBOX',
-  DATE = 'DATE',
+  Text = 'TEXT',
+  MultipleChoice = 'MULTIPLE_CHOICE',
+  Checkbox = 'CHECKBOX',
+  Date = 'DATE',
 }
 
 export interface Option {

@@ -3,7 +3,7 @@ import cors from 'cors'
 import express from 'express'
 import { expressMiddleware } from '@as-integrations/express5'
 import { resolvers } from './resolvers/index.js';
-import { typeDefs } from './schema.js';
+import { typeDefs } from '@tenthousand/shared';
 
 const app = express()
 
