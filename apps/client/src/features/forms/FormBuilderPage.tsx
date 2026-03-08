@@ -1,135 +1,176 @@
+import { Button } from '../../components/ui/Button'
+import { PageLayout } from '../../components/layout/PageLayout'
 import { QuestionType } from '../../app/api/generated'
+import { Spinner } from '../../components/ui/Spinner'
 import { useFormBuilder } from './useFormBuilder'
 
 export function FormBuilderPage() {
-	const {
-		title,
-		description,
-		questions,
-		hasUnsavedChanges,
-		isLoading,
-		error,
-		saveError,
-		onSave,
-		setTitle,
-		setDescription,
-		addQuestion,
-		removeQuestion,
-		updateQuestion,
-		addOption,
-		updateOption,
-		removeOption,
-	} = useFormBuilder()
+  const {
+    title,
+    description,
+    questions,
+    hasUnsavedChanges,
+    isLoading,
+    canAddQuestion,
+    handleTitleChange,
+    handleDescriptionChange,
+    handleTypeChange,
+    handleQuestionTextChange,
+    handleRequiredChange,
+    handleOptionChange,
+    onSave,
+    handleAddQuestion,
+    handleRemoveQuestion,
+    handleAddOption,
+    handleRemoveOption,
+    handleReset,
+  } = useFormBuilder()
 
-	return (
-		<div>
-			<h1>New Form</h1>
+  if (isLoading && questions.length === 0) {
+    return (
+      <PageLayout>
+        <Spinner fullPage />
+      </PageLayout>
+    )
+  }
 
-			{/* Form title and description */}
-			<div>
-				<input
-					type='text'
-					placeholder='Form title'
-					value={title}
-					onChange={e => setTitle(e.target.value)}
-				/>
-				<textarea
-					placeholder='Form description (optional)'
-					value={description}
-					onChange={e => setDescription(e.target.value)}
-				/>
-			</div>
+  return (
+    <PageLayout>
 
-			{/* Questions list */}
-			<div>
-				{questions.map((question, index) => (
-					<div key={question.id}>
-						<input
-							type='text'
-							placeholder={`Question ${index + 1}`}
-							value={question.text}
-							onChange={e =>
-								updateQuestion(question.id, { text: e.target.value })
-							}
-						/>
+      <div className="builder__meta">
+        <div className="field">
+          <label className="label" htmlFor="form-title">Form title</label>
+          <input
+            id="form-title"
+            type="text"
+            placeholder="Untitled form"
+            value={title}
+            onChange={handleTitleChange}
+          />
+        </div>
+        <div className="field">
+          <label className="label" htmlFor="form-desc">Description</label>
+          <textarea
+            id="form-desc"
+            placeholder="Optional description…"
+            value={description}
+            onChange={handleDescriptionChange}
+          />
+        </div>
+      </div>
 
-						{/* Question type selector */}
-						<select
-							value={question.type}
-							onChange={e =>
-								updateQuestion(question.id, {
-									type: e.target.value as QuestionType,
-								})
-							}
-						>
-							<option value={QuestionType.Text}>Text</option>
-							<option value={QuestionType.MultipleChoice}>
-								Multiple Choice
-							</option>
-							<option value={QuestionType.Checkbox}>Checkbox</option>
-							<option value={QuestionType.Date}>Date</option>
-						</select>
+      <div className="questions-list">
+        {questions.map((q, index) => (
+          <div key={q.id} className="question-card">
 
-						{/* Required toggle */}
-						<label>
-							<input
-								type='checkbox'
-								checked={question.required}
-								onChange={e =>
-									updateQuestion(question.id, { required: e.target.checked })
-								}
-							/>
-							<span>Required</span>
-						</label>
+            <div className="question-card__header">
+              <span className="question-card__number">Q{index + 1}</span>
+              <select
+                value={q.type}
+                aria-label="Question type"
+                onChange={(e) => handleTypeChange(e, q.id)}
+              >
+                <option value={QuestionType.Text}>Text</option>
+                <option value={QuestionType.MultipleChoice}>Multiple choice</option>
+                <option value={QuestionType.Checkbox}>Checkbox</option>
+                <option value={QuestionType.Date}>Date</option>
+              </select>
+            </div>
 
-						{/* Options for Multiple Choice and Checkbox */}
-						{(question.type === QuestionType.MultipleChoice ||
-							question.type === QuestionType.Checkbox) && (
-							<div>
-								{question.options.map(option => (
-									<div key={option.id}>
-										<input
-											type='text'
-											placeholder='Option label'
-											value={option.label}
-											onChange={e =>
-												updateOption(question.id, option.id, e.target.value)
-											}
-										/>
-										<button
-											onClick={() => removeOption(question.id, option.id)}
-										>
-											Remove option
-										</button>
-									</div>
-								))}
-								<button onClick={() => addOption(question.id)}>
-									Add option
-								</button>
-							</div>
-						)}
+            <div className="question-card__body">
+              <div className="field">
+                <input
+                  type="text"
+                  placeholder="Question text"
+                  value={q.text}
+                  aria-label={`Question ${index + 1} text`}
+                  onChange={(e) => handleQuestionTextChange(e, q.id)}
+                />
+              </div>
 
-						<button onClick={() => removeQuestion(question.id)}>
-							Remove question
-						</button>
-					</div>
-				))}
-			</div>
+              {(q.type === QuestionType.MultipleChoice ||
+                q.type === QuestionType.Checkbox) && (
+                <div className="options-list">
+                  {q.options.map((opt) => (
+                    <div key={opt.id} className="option-row">
+                      <input
+                        type="text"
+                        placeholder="Option text"
+                        value={opt.label}
+                        aria-label="Option text"
+                        onChange={(e) => handleOptionChange(e, q.id, opt.id)}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label="Remove option"
+                        onClick={() => handleRemoveOption(q.id, opt.id)}
+                      >
+                        ✕
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleAddOption(q.id)}
+                  >
+                    + Add option
+                  </Button>
+                </div>
+              )}
+            </div>
 
-			{/* Add question button */}
-			<button onClick={addQuestion}>Add question</button>
+            <div className="question-card__footer">
+              <label className="check-label">
+                <input
+                  type="checkbox"
+                  checked={q.required}
+                  onChange={(e) => handleRequiredChange(e, q.id)}
+                />
+                Required
+              </label>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => handleRemoveQuestion(q.id)}
+              >
+                Remove
+              </Button>
+            </div>
 
-			{/* Errors */}
-			{saveError && <p style={{ color: 'red' }}>{saveError}</p>}
-			{error && <p style={{ color: 'red' }}>Server error</p>}
+          </div>
+        ))}
+      </div>
 
-			{/* Save button */}
-			{hasUnsavedChanges && (
-				<p style={{ color: 'orange' }}>You have unsaved changes</p>
-			)}
-			<button onClick={onSave} disabled={isLoading || !title.trim()}>
-				{isLoading ? 'Saving...' : 'Save form'}
-			</button>
-		</div>
-	)
+      <div className="builder__actions">
+        <div className="builder__actions-left">
+          <Button
+            variant="secondary"
+            disabled={!canAddQuestion}
+            onClick={handleAddQuestion}
+          >
+            + Add question
+          </Button>
+          <Button variant="ghost" onClick={handleReset}>
+            Reset
+          </Button>
+        </div>
+        <div className="builder__actions-right">
+          {hasUnsavedChanges && (
+            <span className="alert alert--warning">Unsaved changes</span>
+          )}
+          <Button
+            variant="primary"
+            loading={isLoading}
+            disabled={!title.trim()}
+            onClick={onSave}
+          >
+            Save form
+          </Button>
+        </div>
+      </div>
+
+    </PageLayout>
+  )
 }

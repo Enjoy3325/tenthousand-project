@@ -1,0 +1,137 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(247, 246, 243, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--clr-border);
+
+  &__inner {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__left {
+    display: flex;
+    align-items: center;
+    flex: 1;
+  }
+
+  &__right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 1;
+  }
+
+  &__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--clr-text);
+    letter-spacing: -0.02em;
+    cursor: default;
+    user-select: none;
+
+    svg {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  &__back {
+    color: var(--clr-text-muted) !important;
+    padding-left: 8px !important;
+
+    &:hover:not(:disabled) {
+      color: var(--clr-text) !important;
+      background: var(--clr-border) !important;
+    }
+  }
+}
+
+// ─── Desktop (1200px+) ────
+@media (min-width: 1200px) {
+  .header__inner {
+    max-width: 1120px;
+    padding: 0 40px;
+    height: 60px;
+  }
+
+  .header__logo {
+    font-size: 1rem;
+  }
+}
+
+// ─── Tablet (768px – 1199px) ───
+@media (max-width: 1199px) and (min-width: 768px) {
+  .header__inner {
+    max-width: 100%;
+    padding: 0 32px;
+    height: 56px;
+  }
+}
+
+// ─── Mobile large (480px – 767px) ────
+@media (max-width: 767px) and (min-width: 480px) {
+  .header__inner {
+    padding: 0 20px;
+    height: 52px;
+  }
+
+  .header__logo {
+    font-size: 0.875rem;
+    gap: 6px;
+  }
+
+  .header__back {
+    font-size: 0;
+    padding: 8px !important;
+    min-width: 36px;
+    min-height: 36px;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+// ─── Mobile small (< 480px) ────
+@media (max-width: 479px) {
+  .header__inner {
+    padding: 0 16px;
+    height: 48px;
+  }
+
+  .header__logo {
+    font-size: 0.875rem;
+    gap: 6px;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .header__back {
+    font-size: 0;
+    padding: 8px !important;
+    min-width: 36px;
+    min-height: 36px;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
