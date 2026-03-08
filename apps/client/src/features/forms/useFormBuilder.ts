@@ -24,34 +24,34 @@ import {
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { useCallback, useEffect, useState } from 'react'
 
+import type { ChangeEvent } from 'react'
 import type { QuestionInput } from '../../app/api/generated'
+import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 
 //  Validation logic for the form builder
 
 function validateForm(title: string, questions: BuilderQuestion[]): string[] {
-	const errors: string[] = []
+	const titleErrors = !title.trim() ? ['Form title is required'] : []
 
-	if (!title.trim()) {
-		errors.push('Form title is required')
-	}
-
-	questions.forEach((q, i) => {
+	const questionErrors = questions.reduce<string[]>((acc, q, i) => {
 		if (!q.text.trim()) {
-			errors.push(`Question ${i + 1}: text is required`)
+			acc.push(`Question ${i + 1}: text is required`)
 		}
+
 		if (
 			(q.type === QuestionType.MultipleChoice ||
 				q.type === QuestionType.Checkbox) &&
-			q.options.length < MIN_OPTIONS_FOR_CHOICE
+			(!q.options || q.options.length < MIN_OPTIONS_FOR_CHOICE)
 		) {
-			errors.push(`Question ${i + 1}: at least 2 options are required`)
+			acc.push(`Question ${i + 1}: at least 2 options are required`)
 		}
-	})
 
-	return errors
+		return acc
+	}, [])
+
+	return [...titleErrors, ...questionErrors]
 }
-
 function toQuestionInputs(questions: BuilderQuestion[]): QuestionInput[] {
 	return questions.map(q => ({
 		text: q.text,
@@ -75,8 +75,25 @@ export function useFormBuilder() {
 
 	// RTK Query generates a mutation to create a form
 	const [createForm, { isLoading, error }] = useCreateFormMutation()
-
 	const [saveError, setSaveError] = useState<string | null>(null)
+
+	// ─── Side effects — toast notifications ───
+	useEffect(() => {
+		if (saveError) toast.error(saveError)
+	}, [saveError])
+
+	useEffect(() => {
+		if (error) toast.error('Server error. Please try again.')
+	}, [error])
+
+	// ─── Warn before leaving with unsaved changes ───
+	useEffect(() => {
+		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+			if (hasUnsavedChanges) e.preventDefault()
+		}
+		window.addEventListener('beforeunload', handleBeforeUnload)
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+	}, [hasUnsavedChanges])
 
 	// Save form
 	const handleSave = useCallback(async (): Promise<void> => {
@@ -104,16 +121,89 @@ export function useFormBuilder() {
 		}
 	}, [handleSave])
 
-	// Warn user before leaving page with unsaved changes
-	useEffect(() => {
-		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-			if (hasUnsavedChanges) {
-				e.preventDefault()
-			}
+	// ─── Input handlers — ChangeEvent ───
+	const handleTitleChange = useCallback(
+		(e: ChangeEvent<HTMLInputElement>) => dispatch(setTitle(e.target.value)),
+		[dispatch],
+	)
+
+	const handleDescriptionChange = useCallback(
+		(e: ChangeEvent<HTMLTextAreaElement>) =>
+			dispatch(setDescription(e.target.value)),
+		[dispatch],
+	)
+
+	const handleTypeChange = useCallback(
+		(e: ChangeEvent<HTMLSelectElement>, questionId: string) => {
+			dispatch(
+				updateQuestion({
+					id: questionId,
+					patch: { type: e.target.value as QuestionType },
+				}),
+			)
+		},
+		[dispatch],
+	)
+
+	const handleQuestionTextChange = useCallback(
+		(e: ChangeEvent<HTMLInputElement>, questionId: string) => {
+			dispatch(
+				updateQuestion({ id: questionId, patch: { text: e.target.value } }),
+			)
+		},
+		[dispatch],
+	)
+
+	const handleRequiredChange = useCallback(
+		(e: ChangeEvent<HTMLInputElement>, questionId: string) => {
+			dispatch(
+				updateQuestion({
+					id: questionId,
+					patch: { required: e.target.checked },
+				}),
+			)
+		},
+		[dispatch],
+	)
+
+	const handleOptionChange = useCallback(
+		(
+			e: ChangeEvent<HTMLInputElement>,
+			questionId: string,
+			optionId: string,
+		) => {
+			dispatch(updateOption({ questionId, optionId, label: e.target.value }))
+		},
+		[dispatch],
+	)
+	const handleAddQuestion = useCallback(() => {
+		if (questions.length < MAX_QUESTIONS) {
+			dispatch(addQuestion())
 		}
-		window.addEventListener('beforeunload', handleBeforeUnload)
-		return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-	}, [hasUnsavedChanges])
+	}, [dispatch, questions.length])
+
+	const handleRemoveQuestion = useCallback(
+		(id: string) => dispatch(removeQuestion(id)),
+		[dispatch],
+	)
+
+	const handleAddOption = useCallback(
+		(questionId: string) => {
+			const question = questions.find(q => q.id === questionId)
+			if (question && question.options.length < MAX_OPTIONS_PER_QUESTION) {
+				dispatch(addOption(questionId))
+			}
+		},
+		[dispatch, questions],
+	)
+
+	const handleRemoveOption = useCallback(
+		(questionId: string, optionId: string) =>
+			dispatch(removeOption({ questionId, optionId })),
+		[dispatch],
+	)
+
+	const handleReset = useCallback(() => dispatch(resetBuilder()), [dispatch])
 
 	return {
 		// State
@@ -124,30 +214,22 @@ export function useFormBuilder() {
 		isLoading,
 		error,
 		saveError,
-		onSave,
 		canAddQuestion: questions.length < MAX_QUESTIONS,
-		// Actions — simply dispatch actions in Redux
-		setTitle: (value: string) => dispatch(setTitle(value)),
-		setDescription: (value: string) => dispatch(setDescription(value)),
-		addQuestion: () => {
-			if (questions.length > MIN_QUESTIONS && questions.length < MAX_QUESTIONS) {
-				dispatch(addQuestion())
-			}
-		},
-		removeQuestion: (id: string) => dispatch(removeQuestion(id)),
-		updateQuestion: (id: string, patch: UpdateQuestionPatch) =>
-			dispatch(updateQuestion({ id, patch })),
-		addOption: (questionId: string) => {
-			const question = questions.find(q => q.id === questionId)
-			if (question && question.options.length < MAX_OPTIONS_PER_QUESTION) {
-				dispatch(addOption(questionId))
-			}
-		},
-		updateOption: (questionId: string, optionId: string, label: string) =>
-			dispatch(updateOption({ questionId, optionId, label })),
-		removeOption: (questionId: string, optionId: string) =>
-			dispatch(removeOption({ questionId, optionId })),
-		handleSave,
-		handleReset: () => dispatch(resetBuilder()),
+
+		// Input handlers
+		handleTitleChange,
+		handleDescriptionChange,
+		handleTypeChange,
+		handleQuestionTextChange,
+		handleRequiredChange,
+		handleOptionChange,
+
+		// Actions
+		onSave,
+		handleAddQuestion,
+		handleRemoveQuestion,
+		handleAddOption,
+		handleRemoveOption,
+		handleReset,
 	}
 }

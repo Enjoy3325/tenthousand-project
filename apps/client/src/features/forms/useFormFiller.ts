@@ -3,6 +3,7 @@ import {
 	useGetFormQuery,
 	useSubmitResponseMutation,
 } from '../../app/api/generated'
+import type { ChangeEvent } from 'react'
 import { useCallback, useState } from 'react'
 
 import type { GetFormQuery } from '../../app/api/generated'
@@ -97,6 +98,29 @@ export function useFormFiller(form: Form) {
 		setAnswers({})
 	}, [form, answers, submitResponse])
 
+  // handlers
+  const handleTextChange = useCallback((e: ChangeEvent<HTMLInputElement>, questionId: string) => {
+    setAnswer(questionId, e.target.value)
+  }, [setAnswer])
+
+  const handleDateChange = useCallback((e: ChangeEvent<HTMLInputElement>, questionId: string) => {  
+    setAnswer(questionId, e.target.value)
+  }, [setAnswer])
+
+  const handleRadioChange = useCallback((questionId: string, option: string) => {
+    setAnswer(questionId, option)
+  }, [setAnswer])
+
+  const handleCheckboxChange = useCallback((questionId: string, option: string) => {    
+    toggleCheckbox(questionId, option)
+  }, [toggleCheckbox])
+
+const handleReset = useCallback(() => {
+    setAnswers({})
+    setValidationErrors([])
+    setIsSubmitted(false)
+  }, [])
+
 	// Checks whether all required questions have been filled in
 
 	const isFormValid = form.questions
@@ -126,5 +150,10 @@ export function useFormFiller(form: Form) {
 		resetForm,
 		isFormValid,
 		useFormFill,
+    handleTextChange,
+    handleDateChange,
+    handleRadioChange,
+    handleCheckboxChange,
+    handleReset,
 	}
 }
