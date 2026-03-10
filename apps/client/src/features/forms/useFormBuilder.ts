@@ -203,7 +203,10 @@ export function useFormBuilder() {
 		[dispatch],
 	)
 
-	const handleReset = useCallback(() => dispatch(resetBuilder()), [dispatch])
+	const handleReset = useCallback(() => {
+		dispatch(resetBuilder())
+		toast.success('Form reset!')
+	}, [dispatch])
 
 	return {
 		// State
