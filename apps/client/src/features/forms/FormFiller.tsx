@@ -1,6 +1,7 @@
 import { Button } from '../../components/ui/Button'
 import type { GetFormQuery } from '../../app/api/generated'
 import { QuestionType } from '../../app/api/generated'
+import { SuccessCard } from '../../components/ui/Successcard'
 import { useFormFiller } from './useFormFiller'
 import { useNavigate } from 'react-router-dom'
 
@@ -31,16 +32,15 @@ export function FormFiller({ form }: Props) {
 	// Success state — after submit
 	if (isSubmitted) {
 		return (
-			<div className='success-card'>
-				<div className='success-card__icon' aria-hidden='true'>
-					✅
-				</div>
-				<h2>Response submitted!</h2>
-				<p>Thank you for filling out the form.</p>
-				<Button variant='primary' onClick={() => navigate('/')}>
-					Home
-				</Button>
-			</div>
+			<SuccessCard
+				formTitle={form.title}
+				submittedAt={new Date()}
+				action={
+					<Button variant='primary' onClick={() => navigate('/')}>
+						Back to Home
+					</Button>
+				}
+			/>
 		)
 	}
 

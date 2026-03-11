@@ -18,7 +18,7 @@ type Answers = Record<string, string | string[]>
 
 export function useFormFill() {
 	const { id } = useParams<{ id: string }>()
-	const { data, isLoading, error } = useGetFormQuery({ id: id! })
+	const { data, isLoading, error} = useGetFormQuery({ id: id! })
 
 	return {
 		form: data?.form ?? null,
@@ -60,6 +60,7 @@ export function useFormFiller(form: Form) {
 	const [validationErrors, setValidationErrors] = useState<string[]>([])
 	const [isSubmitted, setIsSubmitted] = useState<boolean>(false)
 	const [submitError, setSubmitError] = useState<string | null>(null)
+	const [submittedAt, setSubmittedAt] = useState<Date | null>(null)
 
 useEffect(() => {
   if (!submitError) return
@@ -105,6 +106,7 @@ try {
       await submitResponse({ formId: form.id, answers: answerInputs }).unwrap()
 
       setIsSubmitted(true)
+			setSubmittedAt(new Date())
       setAnswers({})
       toast.success('Response submitted!')
     } catch (err) {
@@ -135,6 +137,7 @@ const handleReset = useCallback(() => {
     setAnswers({})
     setValidationErrors([])
     setIsSubmitted(false)
+    setSubmittedAt(null)
   }, [])
 
 	// Checks whether all required questions have been filled in
@@ -171,5 +174,6 @@ const handleReset = useCallback(() => {
     handleRadioChange,
     handleCheckboxChange,
     handleReset,
+		submittedAt,
 	}
 }
