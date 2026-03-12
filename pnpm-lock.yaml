@@ -60,6 +60,9 @@ importers:
       '@graphql-codegen/typescript-rtk-query':
         specifier: ^3.1.2
         version: 3.1.2(@reduxjs/toolkit@2.11.2(react-redux@9.2.0(@types/react@18.3.28)(react@18.3.1)(redux@5.0.1))(react@18.3.1))(graphql-request@7.4.0(graphql@16.13.1))(graphql-tag@2.12.6(graphql@16.13.1))(graphql@16.13.1)
+      '@types/node':
+        specifier: ^25.3.5
+        version: 25.3.5
       '@types/react':
         specifier: ^18.3.3
         version: 18.3.28

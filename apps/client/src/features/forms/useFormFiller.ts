@@ -3,10 +3,11 @@ import {
 	useGetFormQuery,
 	useSubmitResponseMutation,
 } from '../../app/api/generated'
-import type { ChangeEvent } from 'react'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
+import type { ChangeEvent } from 'react'
 import type { GetFormQuery } from '../../app/api/generated'
+import toast from 'react-hot-toast'
 import { useParams } from 'react-router-dom'
 
 // Form comes from RTK Query cache — no need for Redux slice
@@ -17,7 +18,7 @@ type Answers = Record<string, string | string[]>
 
 export function useFormFill() {
 	const { id } = useParams<{ id: string }>()
-	const { data, isLoading, error } = useGetFormQuery({ id: id! })
+	const { data, isLoading, error} = useGetFormQuery({ id: id! })
 
 	return {
 		form: data?.form ?? null,
@@ -57,7 +58,14 @@ export function useFormFiller(form: Form) {
 	// Local state
 	const [answers, setAnswers] = useState<Answers>({})
 	const [validationErrors, setValidationErrors] = useState<string[]>([])
-	const [isSubmitted, setIsSubmitted] = useState(false)
+	const [isSubmitted, setIsSubmitted] = useState<boolean>(false)
+	const [submitError, setSubmitError] = useState<string | null>(null)
+	const [submittedAt, setSubmittedAt] = useState<Date | null>(null)
+
+useEffect(() => {
+  if (!submitError) return
+  toast.error(submitError)
+}, [submitError])
 
 	const [submitResponse, { isLoading, error }] = useSubmitResponseMutation()
 
@@ -87,15 +95,25 @@ export function useFormFiller(form: Form) {
 		}
 
 		setValidationErrors([])
+		setSubmitError(null)
 
-		const answerInputs = Object.entries(answers).map(([questionId, value]) => ({
-			questionId,
-			value: Array.isArray(value) ? value.join(',') : value,
-		}))
+try {
+      const answerInputs = Object.entries(answers).map(([questionId, value]) => ({
+        questionId,
+        value: Array.isArray(value) ? value.join(',') : value,
+      }))
 
-		await submitResponse({ formId: form.id, answers: answerInputs }).unwrap()
-		setIsSubmitted(true)
-		setAnswers({})
+      await submitResponse({ formId: form.id, answers: answerInputs }).unwrap()
+
+      setIsSubmitted(true)
+			setSubmittedAt(new Date())
+      setAnswers({})
+      toast.success('Response submitted!')
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error ? err.message : 'Failed to submit form'
+      )
+    }
 	}, [form, answers, submitResponse])
 
   // handlers
@@ -119,6 +137,7 @@ const handleReset = useCallback(() => {
     setAnswers({})
     setValidationErrors([])
     setIsSubmitted(false)
+    setSubmittedAt(null)
   }, [])
 
 	// Checks whether all required questions have been filled in
@@ -155,5 +174,6 @@ const handleReset = useCallback(() => {
     handleRadioChange,
     handleCheckboxChange,
     handleReset,
+		submittedAt,
 	}
 }

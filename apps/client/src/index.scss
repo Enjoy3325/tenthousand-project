@@ -719,6 +719,7 @@ select {
 	}
 }
 
+// ─── Success card ───
 .success-card {
 	display: flex;
 	flex-direction: column;
@@ -736,9 +737,64 @@ select {
 	h2 {
 		color: var(--clr-text);
 	}
+
+	&__subtitle {
+		font-size: 0.9375rem;
+		color: var(--clr-text-muted);
+		max-width: 320px;
+	}
+
+	&__meta {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 4px;
+		margin-top: 4px;
+		padding: 14px 24px;
+		background: var(--clr-surface-2);
+		border: 1px solid var(--clr-border);
+		border-radius: var(--radius-md);
+		width: 100%;
+		max-width: 360px;
+	}
+
+	&__form-name {
+		font-size: 0.9375rem;
+		font-weight: 500;
+		color: var(--clr-text);
+		letter-spacing: -0.01em;
+	}
+
+	&__time {
+		font-size: 0.8125rem;
+		font-family: var(--font-mono);
+		color: var(--clr-text-subtle);
+		letter-spacing: 0.02em;
+	}
 }
 
-// ─── Responses ───────────────────────────────────────────────
+@media (max-width: 767px) {
+	.success-card {
+		padding: 48px 20px;
+
+		&__meta {
+			max-width: 100%;
+			padding: 12px 16px;
+		}
+	}
+}
+
+@media (max-width: 479px) {
+	.success-card {
+		padding: 40px 16px;
+
+		&__time {
+			font-size: 0.75rem;
+		}
+	}
+}
+
+// ─── Responses ────
 .responses-header {
 	display: flex;
 	align-items: baseline;
@@ -812,7 +868,7 @@ select {
 	}
 }
 
-// ─── 404 Page ────────────────────────────────────────────────
+// ─── 404 Page ────
 .not-found {
 	display: flex;
 	flex-direction: column;
@@ -843,7 +899,7 @@ select {
 	}
 }
 
-// ─── Responsive ──────────────────────────────────────────────
+// ─── Responsive ────
 @media (max-width: 767px) {
 	.home-header {
 		flex-direction: column;

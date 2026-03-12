@@ -46,6 +46,20 @@ const initialState: FormBuilderState = {
 
 // ─── Helper ───
 
+const CHOICE_TYPES = new Set([
+  QuestionType.MultipleChoice,
+  QuestionType.Checkbox,
+])
+
+function resolveOptions(
+  currentOptions: BuilderOption[],
+  newType: QuestionType | undefined,
+): BuilderOption[] {
+  if (newType === undefined) return currentOptions       
+  if (CHOICE_TYPES.has(newType)) return currentOptions  
+  return []                                            
+}
+
 function makeQuestion(order: number): BuilderQuestion {
 	return {
 		id: nanoid(),
@@ -93,28 +107,26 @@ export const formBuilderSlice = createSlice({
 		},
 
 		// Update any question field
-		updateQuestion: (
-			state,
-			action: PayloadAction<{
-				id: string
-				patch: Partial<Omit<BuilderQuestion, 'id' | 'options'>>
-			}>,
-		) => {
-			const question = state.questions.find(q => q.id === action.payload.id)
-			if (!question) return
+	updateQuestion: (
+  state: FormBuilderState,
+  action: PayloadAction<{
+    id: string
+    patch: Partial<Omit<BuilderQuestion, 'id' | 'options'>>
+  }>,
+) => {
+  const { id, patch } = action.payload
 
-			Object.assign(question, action.payload.patch)
+  const index = state.questions.findIndex(q => q.id === id)
+  if (index === -1) return
 
-			// If type changed to non-choice — clear options
-			const isChoiceType =
-				action.payload.patch.type === QuestionType.MultipleChoice ||
-				action.payload.patch.type === QuestionType.Checkbox
-			if (action.payload.patch.type && !isChoiceType) {
-				question.options = []
-			}
+  state.questions[index] = {
+    ...state.questions[index],
+    ...patch,
+    options: resolveOptions(state.questions[index].options, patch.type),
+  }
 
-			state.hasUnsavedChanges = true
-		},
+  state.hasUnsavedChanges = true
+},
 
 		// Add option to question
 		addOption: (state, action: PayloadAction<string>) => {
